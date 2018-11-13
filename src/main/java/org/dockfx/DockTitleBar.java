@@ -21,12 +21,9 @@
 package org.dockfx;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Stack;
 
-import com.sun.javafx.stage.StageHelper;
-
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.Event;
 import javafx.event.EventHandler;
@@ -91,7 +88,6 @@ public class DockTitleBar extends HBox implements EventHandler<MouseEvent> {
 
     closeButton = new Button();
     closeButton.setOnAction(new EventHandler<ActionEvent>() {
-
       @Override
       public void handle(ActionEvent event) {
         dockNode.close();
@@ -114,7 +110,6 @@ public class DockTitleBar extends HBox implements EventHandler<MouseEvent> {
     closeButton.getStyleClass().add("dock-close-button");
     stateButton.getStyleClass().add("dock-state-button");
     this.getStyleClass().add("dock-title-bar");
-
   }
 
   /**
@@ -230,10 +225,14 @@ public class DockTitleBar extends HBox implements EventHandler<MouseEvent> {
     // RFE for public scene graph traversal API filed but closed:
     // https://bugs.openjdk.java.net/browse/JDK-8133331
 
-    ObservableList<Stage> stages =
-        FXCollections.unmodifiableObservableList(StageHelper.getStages());
+    List<DockPane> dockPanes = DockPane.dockPanes;
+
     // fire the dock over event for the active stages
-    for (Stage targetStage : stages) {
+    for (DockPane dockPane : dockPanes) {
+      Window window = dockPane.getScene().getWindow();
+      if (!(window instanceof Stage)) continue;
+      Stage targetStage = (Stage) window;
+
       // obviously this title bar does not need to receive its own events
       // though users of this library may want to know when their
       // dock node is being dragged by subclassing it or attaching
