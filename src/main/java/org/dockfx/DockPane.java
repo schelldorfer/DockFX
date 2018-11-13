@@ -40,6 +40,7 @@ import javafx.scene.Parent;
 import javafx.scene.control.Button;
 import javafx.scene.control.SplitPane;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.shape.Rectangle;
 import javafx.stage.Popup;
@@ -398,6 +399,39 @@ public class DockPane extends StackPane implements EventHandler<DockEvent> {
           this.getChildren().set(this.getChildren().indexOf(root), splitPane);
           splitPane.getItems().add(split);
           root = splitPane;
+          
+          // TODO ms - 2015-12-22 - pass preferred width/height to SplitPane
+          if(requestedOrientation == Orientation.HORIZONTAL)
+          {
+              double prefWidth = split.getPrefWidth();
+              for (Node splitItem : split.getItems())
+              {
+                  if(splitItem instanceof Region && ((Region)splitItem).getPrefWidth() > prefWidth)
+                      prefWidth = ((Region)splitItem).getPrefWidth();
+              }
+              
+              for (Node splitItem : splitPane.getItems())
+              {
+                  if(splitItem instanceof SplitPane)
+                      ((SplitPane)splitItem).setPrefWidth(prefWidth);
+              }
+          }
+          else
+          {
+              double prefHeight = split.getPrefHeight();
+              for (Node splitItem : split.getItems())
+              {
+                  if(splitItem instanceof Region && ((Region)splitItem).getPrefHeight() > prefHeight)
+                      prefHeight = ((Region)splitItem).getPrefHeight();
+              }
+              
+              for (Node splitItem : splitPane.getItems())
+              {
+                  if(splitItem instanceof SplitPane)
+                      ((SplitPane)splitItem).setPrefHeight(prefHeight);
+              }
+          }
+          
         } else {
           split.getItems().set(split.getItems().indexOf(sibling), splitPane);
           splitPane.getItems().add(sibling);
@@ -567,7 +601,7 @@ public class DockPane extends StackPane implements EventHandler<DockEvent> {
         Point2D originToScene = dockAreaDrag.localToScene(0, 0);
 
         dockAreaIndicator.setVisible(true);
-        dockAreaIndicator.relocate(originToScene.getX(), originToScene.getY());
+        dockAreaIndicator.relocate(originToScene.getX() - DockPane.this.getLayoutX(), originToScene.getY() - DockPane.this.getLayoutY());
         if (dockPosDrag == DockPos.RIGHT) {
           dockAreaIndicator.setTranslateX(dockAreaDrag.getLayoutBounds().getWidth() / 2);
         } else {
@@ -628,6 +662,9 @@ public class DockPane extends StackPane implements EventHandler<DockEvent> {
       if (dockIndicatorPopup.isShowing()) {
         dockIndicatorOverlay.hide();
         dockIndicatorPopup.hide();
+      }
+      if (dockIndicatorOverlay.isShowing()) {
+          dockIndicatorOverlay.hide();
       }
     }
   }
